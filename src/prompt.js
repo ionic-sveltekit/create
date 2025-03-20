@@ -6,7 +6,7 @@ import { validateProjectName } from './utils/validation.js';
  * Gets project options through interactive prompts
  */
 export async function getProjectOptions(options = {}) {
-  // Start with existing options
+  // Start with existing options but don't apply defaults yet
   const projectOptions = { ...options };
 
   // Prepare questions for missing options
@@ -30,7 +30,7 @@ export async function getProjectOptions(options = {}) {
     });
   }
 
-  // TypeScript option
+  // TypeScript option - Always ask unless explicitly specified
   if (!('types' in projectOptions)) {
     questions.push({
       type: 'list',
@@ -114,9 +114,12 @@ export async function getProjectOptions(options = {}) {
     });
   }
 
+  console.log(`Will ask ${questions.length} questions.`);
+
   // If there are questions, prompt the user
   if (questions.length > 0) {
     const answers = await inquirer.prompt(questions);
+    console.log("User answers:", answers);
 
     // Merge answers with options
     Object.assign(projectOptions, answers);

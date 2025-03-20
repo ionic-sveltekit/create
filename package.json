@@ -21,7 +21,11 @@
     "url": "git+https://github.com/ionic-sveltekit/create.git"
   },
   "license": "MIT",
-  "author": "briznad@gmail.com",
+  "author": {
+    "name": "Brad Mallow",
+    "email": "brad.mallow@gmail.com",
+    "url": "https://bradmallow.com"
+  },
   "type": "module",
   "main": "./src/index.js",
   "bin": {
@@ -43,10 +47,9 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@ionic-sveltekit/example": "^0.0.3",
+    "@ionic-sveltekit/example": "^0.0.4",
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
-    "create-svelte": "^5.1.1",
     "execa": "^8.0.1",
     "fs-extra": "^11.2.0",
     "glob": "^10.3.10",
@@ -73,6 +76,8 @@
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
     "prettier": "^3.1.1",
+    "sv": "^0.6.26",
+    "svelte-strip": "^3.1.1",
     "typescript": "^5.3.3"
   },
   "lint-staged": {

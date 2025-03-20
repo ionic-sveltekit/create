@@ -1,4 +1,4 @@
-import { create } from 'create-svelte';
+import { create } from 'sv';
 import path from 'path';
 import fs from 'fs-extra';
 import ip from 'ip';
@@ -25,6 +25,8 @@ export async function createProject(options, logger) {
   // Prepare error handler for cleanup
   const cleanupHandler = createCleanupHandler(projectPath);
 
+  const useTypescript = options.types === 'typescript';
+
   try {
     // Setup task list
     const tasks = new Listr([
@@ -32,7 +34,7 @@ export async function createProject(options, logger) {
         title: 'Creating base SvelteKit project',
         task: async () => {
           // Create base SvelteKit project
-          await create(projectPath, { ...options, template: 'skeleton' });
+          await create(projectPath, { ...options, template: 'minimal'});
         }
       },
       {
@@ -60,23 +62,26 @@ export async function createProject(options, logger) {
             {
               title: 'Copying template files',
               task: () => {
-                // Copy the Ionic theme files
-                copyFromExamplePackage('src/theme', path.join(projectPath, 'src/theme'));
+                // copy Ionic theme files
+                copyFromExamplePackage('src/theme', projectPath);
 
-                // Copy component files
-                copyFromExamplePackage('src/lib/components', path.join(projectPath, 'src/lib/components'));
+                // copy component files
+                copyFromExamplePackage('src/lib/components', projectPath);
 
-                // Replace SvelteKit defaults with Ionic versions
-                copyFromExamplePackage('src/routes', path.join(projectPath, 'src/routes'), {
+                // copy static files
+                copyFromExamplePackage('static', projectPath);
+
+                // replace SvelteKit defaults with Ionic versions
+                copyFromExamplePackage('src/routes', projectPath, {
                   processTemplates: true,
                   variables: {
                     projectName: options.name,
-                    useTypescript: options.types === 'typescript'
+                    useTypescript,
                   }
                 });
 
                 // Write svelte.config.js
-                copyFromExamplePackage('svelte.config.js', path.join(projectPath, 'svelte.config.js'));
+                copyFromExamplePackage('svelte.config.js', projectPath);
 
                 // Disable SSR
                 writeFile(
@@ -85,7 +90,7 @@ export async function createProject(options, logger) {
                 );
 
                 // Update TypeScript configuration if needed
-                if (options.types === 'typescript') {
+                if (useTypescript) {
                   try {
                     const tsconfig = readFile(path.join(projectPath, 'tsconfig.json'), 'utf-8');
                     const tsconfignew = tsconfig.replace(
@@ -128,8 +133,8 @@ export async function createProject(options, logger) {
                     serverUrl: `http://${ip.address()}:5173/`
                   };
 
-                  if (options.types === 'typescript') {
-                    copyFromExamplePackage('capacitor.config.ts', path.join(projectPath, 'capacitor.config.ts'), {
+                  if (useTypescript) {
+                    copyFromExamplePackage('capacitor.config.ts', projectPath, {
                       processTemplates: true,
                       variables: capacitorVars
                     });
@@ -163,7 +168,9 @@ export async function createProject(options, logger) {
             {
               title: 'Installing development dependencies',
               task: async () => {
-                const devDeps = ['svelte-preprocess', '@sveltejs/adapter-static'];
+                // const devDeps = ['svelte-preprocess', '@sveltejs/adapter-static'];
+                // const devDeps = ['svelte-preprocess'];
+                const devDeps = ['@sveltejs/adapter-static'];
 
                 if (options.capacitor) {
                   devDeps.push('@capacitor/cli');

@@ -67,9 +67,10 @@ function processTemplateVariables(content, variables) {
 /**
  * Copies files from the example project
  */
-export function copyFromExamplePackage(sourcePath, destPath, options = {}) {
+export function copyFromExamplePackage(sourcePath, projectPath, options = {}) {
   const examplePath = getExamplePath();
   const fullSourcePath = path.join(examplePath, sourcePath);
+  const destPath = path.join(projectPath, sourcePath);
 
   try {
     // Check if the source exists
@@ -82,6 +83,8 @@ export function copyFromExamplePackage(sourcePath, destPath, options = {}) {
 
     // Get source stats to check if it's a file or directory
     const stats = fs.statSync(fullSourcePath);
+
+    console.debug('copyFromExamplePackage', { sourcePath, projectPath, options, examplePath, fullSourcePath, destPath, isDirectory: stats.isDirectory() });
 
     if (stats.isDirectory()) {
       // Copy directory

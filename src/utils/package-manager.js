@@ -29,14 +29,16 @@ export function detectPackageManager() {
 /**
  * Executes a package manager command
  */
-async function executePackageManager(command, args, options = {}) {
+async function executePackageManager(packageManager, args, options = {}) {
   const { cwd = process.cwd(), verbose = false } = options;
 
+  console.debug('executePackageManager', {packageManager, args, cwd});
+
   try {
-    const result = await execa(command, args, {
+    const result = await execa(packageManager, args, {
       cwd,
       stdio: verbose ? 'inherit' : 'pipe',
-      shell: true
+      // shell: true
     });
 
     return result;
@@ -44,8 +46,8 @@ async function executePackageManager(command, args, options = {}) {
 		console.error('error', error);
 
     throw new PackageManagerError(
-      `Failed to execute package manager command: ${command} ${args.join(' ')}`,
-      `${command} ${args.join(' ')}`,
+      `Failed to execute package manager command: ${packageManager} ${args.join(' ')}`,
+      `${packageManager} ${args.join(' ')}`,
       error.stderr
     );
   }
@@ -63,10 +65,9 @@ export async function installDependencies(dependencies, options = {}) {
   } = options;
 
   const pm = PM_COMMANDS[packageManager] || PM_COMMANDS.npm;
-  const command = packageManager;
   const args = [dev ? pm.addDev : pm.add, ...dependencies];
 
-  return executePackageManager(command, args, { cwd, verbose });
+  return executePackageManager(packageManager, args, { cwd, verbose });
 }
 
 /**
@@ -105,27 +106,27 @@ export async function runScript(script, options = {}) {
 /**
  * Gets the package manager's version
  */
-export async function getPackageManagerVersion(packageManager = 'npm') {
-  try {
-    const { stdout } = await execa(packageManager, ['--version']);
-    return stdout.trim();
-  } catch (error) {
-    throw new PackageManagerError(
-      `Failed to get ${packageManager} version`,
-      `${packageManager} --version`,
-      error.stderr
-    );
-  }
-}
+// async function getPackageManagerVersion(packageManager = 'npm') {
+//   try {
+//     const { stdout } = await execa(packageManager, ['--version']);
+//     return stdout.trim();
+//   } catch (error) {
+//     throw new PackageManagerError(
+//       `Failed to get ${packageManager} version`,
+//       `${packageManager} --version`,
+//       error.stderr
+//     );
+//   }
+// }
 
 /**
  * Checks if a package is installed globally
  */
-export async function isPackageInstalledGlobally(packageName, packageManager = 'npm') {
-  try {
-    const { stdout } = await execa(packageManager, ['list', '-g', packageName]);
-    return stdout.includes(packageName);
-  } catch (error) {
-    return false;
-  }
-}
+// async function isPackageInstalledGlobally(packageName, packageManager = 'npm') {
+//   try {
+//     const { stdout } = await execa(packageManager, ['list', '-g', packageName]);
+//     return stdout.includes(packageName);
+//   } catch (error) {
+//     return false;
+//   }
+// }

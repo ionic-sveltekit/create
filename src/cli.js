@@ -29,13 +29,13 @@ export function createCLI() {
     .version(version, '-v, --version', 'Output the current version')
     .argument('[project-name]', OPTION_DESCRIPTIONS.name)
     .option('--path <path>', OPTION_DESCRIPTIONS.path, DEFAULT_OPTIONS.path)
-    .option('--types <type>', OPTION_DESCRIPTIONS.types, DEFAULT_OPTIONS.types)
-    .option('--eslint [boolean]', OPTION_DESCRIPTIONS.eslint, DEFAULT_OPTIONS.eslint)
-    .option('--prettier [boolean]', OPTION_DESCRIPTIONS.prettier, DEFAULT_OPTIONS.prettier)
-    .option('--playwright [boolean]', OPTION_DESCRIPTIONS.playwright, DEFAULT_OPTIONS.playwright)
-    .option('--vitest [boolean]', OPTION_DESCRIPTIONS.vitest, DEFAULT_OPTIONS.vitest)
-    .option('--ionicons [boolean]', OPTION_DESCRIPTIONS.ionicons, DEFAULT_OPTIONS.ionicons)
-    .option('--capacitor [boolean]', OPTION_DESCRIPTIONS.capacitor, DEFAULT_OPTIONS.capacitor)
+    .option('--types <type>', OPTION_DESCRIPTIONS.types)
+    .option('--eslint [boolean]', OPTION_DESCRIPTIONS.eslint)
+    .option('--prettier [boolean]', OPTION_DESCRIPTIONS.prettier)
+    .option('--playwright [boolean]', OPTION_DESCRIPTIONS.playwright)
+    .option('--vitest [boolean]', OPTION_DESCRIPTIONS.vitest)
+    .option('--ionicons [boolean]', OPTION_DESCRIPTIONS.ionicons)
+    .option('--capacitor [boolean]', OPTION_DESCRIPTIONS.capacitor)
     .option('--verbose', OPTION_DESCRIPTIONS.verbose)
     .option('--defaults', OPTION_DESCRIPTIONS.defaults)
     .hook('preAction', async (thisCommand) => {
@@ -67,10 +67,15 @@ export function createCLI() {
         // Determine interactive or non-interactive mode
         const isInteractive = !options.defaults;
 
+        console.log("Interactive mode:", isInteractive);
+        console.log("Initial options:", options);
+
         // Get project options through interactive prompts if needed
         const projectOptions = isInteractive
           ? await getProjectOptions(options)
           : { ...DEFAULT_OPTIONS, ...options };
+
+        console.log("Final options:", projectOptions);
 
         // Create the project
         await createProject(projectOptions, logger);
