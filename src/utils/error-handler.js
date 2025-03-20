@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import logSymbols from 'log-symbols';
 import fs from 'fs-extra';
-import path from 'path';
+import { RESOURCES } from '../constants.js';
 
 /**
  * Custom error types
@@ -71,7 +71,7 @@ export function handleError(error) {
   }
 
   console.error(chalk.yellow('\nIf the problem persists, please report this issue at:'));
-  console.error(chalk.cyan('  https://github.com/ionic-team/ionic-sveltekit-create/issues'));
+  console.error(chalk.cyan(`${RESOURCES.githubRepo}/issues`));
 }
 
 /**

@@ -1,6 +1,5 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { glob } from 'glob';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { FileSystemError } from './error-handler.js';
@@ -67,7 +66,7 @@ function processTemplateVariables(content, variables) {
 /**
  * Copies files from the example project
  */
-export function copyFromExamplePackage(sourcePath, projectPath, options = {}) {
+export function copyFromExamplePackage(sourcePath, projectPath, logger, options = {}) {
   const examplePath = getExamplePath();
   const fullSourcePath = path.join(examplePath, sourcePath);
   const destPath = path.join(projectPath, sourcePath);
@@ -84,7 +83,7 @@ export function copyFromExamplePackage(sourcePath, projectPath, options = {}) {
     // Get source stats to check if it's a file or directory
     const stats = fs.statSync(fullSourcePath);
 
-    console.debug('copyFromExamplePackage', { sourcePath, projectPath, options, examplePath, fullSourcePath, destPath, isDirectory: stats.isDirectory() });
+    logger.debug('copyFromExamplePackage', { sourcePath, projectPath, options, examplePath, fullSourcePath, destPath, isDirectory: stats.isDirectory() });
 
     if (stats.isDirectory()) {
       // Copy directory
@@ -118,7 +117,7 @@ export function copyFromExamplePackage(sourcePath, projectPath, options = {}) {
           const processed = processTemplateVariables(content, options.variables);
           fs.writeFileSync(destPath, processed);
         } catch (error) {
-          // Skip binary files that can't be read as utf8
+          logger.error(error);
         }
       }
     }
@@ -128,6 +127,7 @@ export function copyFromExamplePackage(sourcePath, projectPath, options = {}) {
     if (error instanceof FileSystemError) {
       throw error;
     }
+
     throw new FileSystemError(
       `Failed to copy from example: ${error.message}`,
       { sourcePath: fullSourcePath, destPath }

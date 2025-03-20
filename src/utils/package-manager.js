@@ -1,6 +1,5 @@
 import { execa } from 'execa';
 import fs from 'fs-extra';
-import path from 'path';
 import { PM_COMMANDS } from '../constants.js';
 import { PackageManagerError } from './error-handler.js';
 
@@ -29,21 +28,23 @@ export function detectPackageManager() {
 /**
  * Executes a package manager command
  */
-async function executePackageManager(packageManager, args, options = {}) {
+async function executePackageManager(packageManager, args, logger, options = {}) {
   const { cwd = process.cwd(), verbose = false } = options;
 
-  console.debug('executePackageManager', {packageManager, args, cwd});
+  logger.debug('executePackageManager', {packageManager, args, cwd});
 
   try {
     const result = await execa(packageManager, args, {
       cwd,
       stdio: verbose ? 'inherit' : 'pipe',
-      // shell: true
+      shell: true
     });
 
     return result;
   } catch (error) {
-		console.error('error', error);
+    if (options.verbose) {
+      logger.error('executePackageManager error: ', error);
+    }
 
     throw new PackageManagerError(
       `Failed to execute package manager command: ${packageManager} ${args.join(' ')}`,
@@ -56,7 +57,7 @@ async function executePackageManager(packageManager, args, options = {}) {
 /**
  * Installs dependencies using the specified package manager
  */
-export async function installDependencies(dependencies, options = {}) {
+export async function installDependencies(dependencies, logger, options = {}) {
   const {
     dev = false,
     packageManager = 'npm',
@@ -67,29 +68,28 @@ export async function installDependencies(dependencies, options = {}) {
   const pm = PM_COMMANDS[packageManager] || PM_COMMANDS.npm;
   const args = [dev ? pm.addDev : pm.add, ...dependencies];
 
-  return executePackageManager(packageManager, args, { cwd, verbose });
+  return executePackageManager(packageManager, args, logger, { cwd, verbose });
 }
 
 /**
  * Removes dependencies using the specified package manager
  */
-export async function removeDependencies(dependencies, options = {}) {
+export async function removeDependencies(dependencies, logger, options = {}) {
   const {
     packageManager = 'npm',
     cwd = process.cwd(),
     verbose = false
   } = options;
 
-  const command = packageManager;
   const args = ['remove', ...dependencies];
 
-  return executePackageManager(command, args, { cwd, verbose });
+  return executePackageManager(packageManager, args, logger, { cwd, verbose });
 }
 
 /**
  * Runs a script using the specified package manager
  */
-export async function runScript(script, options = {}) {
+export async function runScript(script, logger, options = {}) {
   const {
     packageManager = 'npm',
     cwd = process.cwd(),
@@ -97,36 +97,7 @@ export async function runScript(script, options = {}) {
   } = options;
 
   const pm = PM_COMMANDS[packageManager] || PM_COMMANDS.npm;
-  const command = packageManager;
   const args = pm.run ? [pm.run, script] : [script];
 
-  return executePackageManager(command, args, { cwd, verbose });
+  return executePackageManager(packageManager, args, logger, { cwd, verbose });
 }
-
-/**
- * Gets the package manager's version
- */
-// async function getPackageManagerVersion(packageManager = 'npm') {
-//   try {
-//     const { stdout } = await execa(packageManager, ['--version']);
-//     return stdout.trim();
-//   } catch (error) {
-//     throw new PackageManagerError(
-//       `Failed to get ${packageManager} version`,
-//       `${packageManager} --version`,
-//       error.stderr
-//     );
-//   }
-// }
-
-/**
- * Checks if a package is installed globally
- */
-// async function isPackageInstalledGlobally(packageName, packageManager = 'npm') {
-//   try {
-//     const { stdout } = await execa(packageManager, ['list', '-g', packageName]);
-//     return stdout.includes(packageName);
-//   } catch (error) {
-//     return false;
-//   }
-// }

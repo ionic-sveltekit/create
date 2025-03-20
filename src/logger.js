@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import logSymbols from 'log-symbols';
 import ora from 'ora';
-import { COLOR_THEME, RESOURCES } from './constants.js';
+import { RESOURCES } from './constants.js';
 
 /**
  * Logger class for handling all CLI output
@@ -38,42 +38,43 @@ ${chalk.white('with Ionic UI components for web and mobile apps.')}
   /**
    * Display a success message
    */
-  success(message) {
-    console.log(`${logSymbols.success} ${chalk.green(message)}`);
+  success(message, ...args) {
+    console.log(`${logSymbols.success} ${chalk.green(message)}`, ...args);
     return this;
   }
 
   /**
    * Display an error message
    */
-  error(message) {
-    console.error(`${logSymbols.error} ${chalk.red(message)}`);
+  error(...args) {
+    console.error(`${logSymbols.error} `, ...args);
     return this;
   }
 
   /**
    * Display a warning message
    */
-  warn(message) {
-    console.warn(`${logSymbols.warning} ${chalk.yellow(message)}`);
+  warn(...args) {
+    console.warn(`${logSymbols.warning} `, ...args);
     return this;
   }
 
   /**
    * Display an info message
    */
-  info(message) {
-    console.info(`${logSymbols.info} ${chalk.blue(message)}`);
+  info(...args) {
+    console.info(`${logSymbols.info} `, ...args);
     return this;
   }
 
   /**
    * Display a debug message (only in verbose mode)
    */
-  debug(message) {
+  debug(...args) {
     if (this.verbose) {
-      console.debug(`${chalk.gray('debug:')} ${chalk.gray(message)}`);
+      console.debug(chalk.gray('debug: '), ...args, '\n');
     }
+
     return this;
   }
 
@@ -154,9 +155,6 @@ ${chalk.white('with Ionic UI components for web and mobile apps.')}
       console.log(`  ${chalk.cyan(RESOURCES.ionicDocs)}`);
     }
 
-    console.log('\nInstall community-maintained integrations:');
-    console.log(chalk.cyan(`  ${RESOURCES.svelteAddersDocs}`));
-
     if (options.capacitor) {
       console.log(`\nCapacitor configuration - see: ${chalk.bold(chalk.cyan('capacitor.config.json|ts'))}`);
       console.log(`  App name ${chalk.bold(chalk.cyan(options.name))}`);
@@ -196,10 +194,6 @@ ${chalk.white('with Ionic UI components for web and mobile apps.')}
 
     console.log(
       `\nHint: Make your app offline and near native by turning it into a progressive web app - see ${chalk.cyan(RESOURCES.pwaDocs)}`
-    );
-
-    console.log(
-      `\nStuck? Visit us at Ionic's discord ${chalk.cyan(RESOURCES.ionicDiscord)}`
     );
 
     console.log(

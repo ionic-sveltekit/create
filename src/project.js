@@ -1,12 +1,11 @@
 import { create } from 'sv';
 import path from 'path';
-import fs from 'fs-extra';
 import ip from 'ip';
 import { Listr } from 'listr2';
 import { createDirectory, writeFile, readFile } from './utils/file-system.js';
 import { installDependencies, removeDependencies, runScript, detectPackageManager } from './utils/package-manager.js';
-import { validateDirectory, validateWritableDirectory } from './utils/validation.js';
-import { createCleanupHandler, FileSystemError } from './utils/error-handler.js';
+import { validateDirectory } from './utils/validation.js';
+import { createCleanupHandler } from './utils/error-handler.js';
 import { copyFromExamplePackage } from './utils/template-utils.js';
 
 /**
@@ -62,17 +61,23 @@ export async function createProject(options, logger) {
             {
               title: 'Copying template files',
               task: () => {
-                // copy Ionic theme files
-                copyFromExamplePackage('src/theme', projectPath);
-
-                // copy component files
-                copyFromExamplePackage('src/lib/components', projectPath);
-
                 // copy static files
-                copyFromExamplePackage('static', projectPath);
+                copyFromExamplePackage('static', projectPath, logger);
+
+                // copy Ionic theme files
+                copyFromExamplePackage('src/theme', projectPath, logger);
+
+                // copy example components
+                copyFromExamplePackage('src/lib/components', projectPath, logger);
+
+                // copy example images
+                copyFromExamplePackage('src/lib/images', projectPath, logger);
+
+                // copy example stores
+                copyFromExamplePackage('src/lib/stores', projectPath, logger);
 
                 // replace SvelteKit defaults with Ionic versions
-                copyFromExamplePackage('src/routes', projectPath, {
+                copyFromExamplePackage('src/routes', projectPath, logger, {
                   processTemplates: true,
                   variables: {
                     projectName: options.name,
@@ -81,7 +86,7 @@ export async function createProject(options, logger) {
                 });
 
                 // Write svelte.config.js
-                copyFromExamplePackage('svelte.config.js', projectPath);
+                copyFromExamplePackage('svelte.config.js', projectPath, logger);
 
                 // Disable SSR
                 writeFile(
@@ -98,10 +103,10 @@ export async function createProject(options, logger) {
                       `"compilerOptions": {
     "verbatimModuleSyntax": true,
     "typeRoots": [
-      "./node_modules/ionic-svelte"
+      "./node_modules/@ionic-sveltekit/core"
     ],
     "types": [
-      "ionic-svelte"
+      "@ionic-sveltekit/core"
     ],`
                     );
 
@@ -134,7 +139,7 @@ export async function createProject(options, logger) {
                   };
 
                   if (useTypescript) {
-                    copyFromExamplePackage('capacitor.config.ts', projectPath, {
+                    copyFromExamplePackage('capacitor.config.ts', projectPath, logger, {
                       processTemplates: true,
                       variables: capacitorVars
                     });
@@ -168,15 +173,13 @@ export async function createProject(options, logger) {
             {
               title: 'Installing development dependencies',
               task: async () => {
-                // const devDeps = ['svelte-preprocess', '@sveltejs/adapter-static'];
-                // const devDeps = ['svelte-preprocess'];
-                const devDeps = ['@sveltejs/adapter-static'];
+                const devDeps = ['svelte-preprocess', '@sveltejs/adapter-static'];
 
                 if (options.capacitor) {
                   devDeps.push('@capacitor/cli');
                 }
 
-                await installDependencies(devDeps, {
+                await installDependencies(devDeps, logger, {
                   dev: true,
                   packageManager: pm,
                   cwd: projectPath,
@@ -187,7 +190,7 @@ export async function createProject(options, logger) {
             {
               title: 'Installing production dependencies',
               task: async () => {
-                const deps = ['@ionic/core@8.2.2', 'ionic-svelte'];
+                const deps = ['@ionic-sveltekit/core', '@ionic-sveltekit/components'];
 
                 if (options.capacitor) {
                   deps.push('@capacitor/core');
@@ -197,7 +200,7 @@ export async function createProject(options, logger) {
                   deps.push('ionicons');
                 }
 
-                await installDependencies(deps, {
+                await installDependencies(deps, logger, {
                   dev: false,
                   packageManager: pm,
                   cwd: projectPath,
@@ -208,7 +211,7 @@ export async function createProject(options, logger) {
             {
               title: 'Removing unused dependencies',
               task: async () => {
-                await removeDependencies(['@sveltejs/adapter-auto'], {
+                await removeDependencies(['@sveltejs/adapter-auto'], logger, {
                   packageManager: pm,
                   cwd: projectPath,
                   verbose: options.verbose
@@ -224,7 +227,7 @@ export async function createProject(options, logger) {
           // Run prettier if enabled
           if (options.prettier) {
             try {
-              await runScript('format', {
+              await runScript('format', logger, {
                 packageManager: ctx.packageManager,
                 cwd: projectPath,
                 verbose: options.verbose

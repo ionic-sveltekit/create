@@ -114,12 +114,9 @@ export async function getProjectOptions(options = {}) {
     });
   }
 
-  console.log(`Will ask ${questions.length} questions.`);
-
   // If there are questions, prompt the user
   if (questions.length > 0) {
     const answers = await inquirer.prompt(questions);
-    console.log("User answers:", answers);
 
     // Merge answers with options
     Object.assign(projectOptions, answers);

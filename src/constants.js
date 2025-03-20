@@ -74,16 +74,15 @@ export const PM_COMMANDS = {
 // External resources
 export const RESOURCES = {
   typescriptDocs: 'https://www.typescriptlang.org/tsconfig#checkJs',
-  eslintDocs: 'https://github.com/sveltejs/eslint-plugin-svelte3',
+  eslintDocs: 'https://sveltejs.github.io/eslint-plugin-svelte/',
   prettierDocs: 'https://prettier.io/docs/en/options.html',
   playwrightDocs: 'https://playwright.dev',
   vitestDocs: 'https://vitest.dev',
   capacitorDocs: 'https://capacitorjs.com/docs/getting-started',
-  ionicDocs: 'https://ionic-svelte.firebaseapp.com/components/Icon',
-  svelteAddersDocs: 'https://github.com/svelte-add/svelte-adders',
+  ionicDocs: 'https://ionic.io/ionicons',
   pwaDocs: 'https://github.com/vite-pwa/sveltekit',
   ionicDiscord: 'https://discordapp.com/channels/520266681499779082/1049388501629681675',
-  githubRepo: 'https://github.com/Tommertom/svelte-ionic-npm'
+  githubRepo: 'https://github.com/ionic-sveltekit/create'
 };
 
 // Color themes for CLI output

@@ -43,6 +43,8 @@ export function createCLI() {
       logger.showBanner(version);
     })
     .action(async (projectName, options) => {
+      logger.setVerbose(options.verbose);
+
       try {
         // Set project name from argument if provided
         if (projectName) {
@@ -67,24 +69,22 @@ export function createCLI() {
         // Determine interactive or non-interactive mode
         const isInteractive = !options.defaults;
 
-        console.log("Interactive mode:", isInteractive);
-        console.log("Initial options:", options);
+        logger.debug("Interactive mode:", isInteractive);
+        logger.debug("Initial options:", options);
 
         // Get project options through interactive prompts if needed
         const projectOptions = isInteractive
           ? await getProjectOptions(options)
           : { ...DEFAULT_OPTIONS, ...options };
 
-        console.log("Final options:", projectOptions);
+        logger.debug("Final options:", projectOptions);
 
         // Create the project
         await createProject(projectOptions, logger);
 
       } catch (error) {
         logger.error(error.message);
-        if (options.verbose) {
-          console.error(error);
-        }
+
         process.exit(1);
       }
     });
