@@ -3,6 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { FileSystemError } from './error-handler.js';
+import { writeFile, readFile } from './file-system.js';
+import { removeTypescriptFromTsFile, removeTypescriptFromSvelteFile } from './remove-ts-utils.js';
 
 // Get current directory of this file
 const __filename = fileURLToPath(import.meta.url);
@@ -69,7 +71,7 @@ function processTemplateVariables(content, variables) {
 export function copyFromExamplePackage(sourcePath, projectPath, logger, options = {}) {
   const examplePath = getExamplePath();
   const fullSourcePath = path.join(examplePath, sourcePath);
-  const destPath = path.join(projectPath, sourcePath);
+  const destPath = path.join(projectPath, options.destPath ?? sourcePath);
 
   try {
     // Check if the source exists
@@ -90,16 +92,40 @@ export function copyFromExamplePackage(sourcePath, projectPath, logger, options 
       fs.copySync(fullSourcePath, destPath);
 
       // Process template variables if needed
-      if (options.processTemplates && options.variables) {
+      if (options.processTemplates && (options.stripTypes || options.variables)) {
         const files = fs.readdirSync(destPath, { recursive: true })
           .filter(file => !fs.statSync(path.join(destPath, file)).isDirectory());
 
         for (const file of files) {
           const filePath = path.join(destPath, file);
+
+          let processedDestPath = filePath;
+
           try {
             const content = fs.readFileSync(filePath, 'utf8');
-            const processed = processTemplateVariables(content, options.variables);
-            fs.writeFileSync(filePath, processed);
+
+            let processed = content;
+
+            if (options.stripTypes && file.endsWith('.ts')) {
+              processed = removeTypescriptFromTsFile(processed);
+
+              // remove ts file
+              fs.unlinkSync(filePath);
+
+              processedDestPath = filePath.replace(/\.ts$/, '.js');
+            }
+
+            if (options.stripTypes && file.endsWith('.svelte')) {
+              processed = removeTypescriptFromSvelteFile(processed);
+            }
+
+            if (options.variables) {
+              processed = processTemplateVariables(processed, options.variables);
+            }
+
+            if (processed !== content || processedDestPath !== filePath) {
+              fs.writeFileSync(processedDestPath, processed);
+            }
           } catch (error) {
             // Skip binary files that can't be read as utf8
             continue;
@@ -131,6 +157,35 @@ export function copyFromExamplePackage(sourcePath, projectPath, logger, options 
     throw new FileSystemError(
       `Failed to copy from example: ${error.message}`,
       { sourcePath: fullSourcePath, destPath }
+    );
+  }
+}
+
+export function modifyTsconfig(projectPath, logger, options = {}) {
+  try {
+    const tsconfig = readFile(path.join(projectPath, 'tsconfig.json'), 'utf-8');
+
+    const modifiedTsconfig = tsconfig.replace(
+      '"compilerOptions": {',
+      `"compilerOptions": {
+    "verbatimModuleSyntax": true,
+    "typeRoots": [
+      "./node_modules/@ionic-sveltekit/core"
+    ],
+    "types": [
+      "@ionic-sveltekit/core"
+    ],`
+    );
+
+    writeFile(path.join(projectPath, 'tsconfig.json'), modifiedTsconfig);
+  } catch (error) {
+    if (error instanceof FileSystemError) {
+      throw error;
+    }
+
+    throw new FileSystemError(
+      `Failed to modify tsconfig: ${error.message}`,
+      { projectPath, error }
     );
   }
 }

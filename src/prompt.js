@@ -48,7 +48,7 @@ export async function getProjectOptions(options = {}) {
         },
         {
           name: 'No',
-          value: null
+          value: 'none'
         }
       ]
     });

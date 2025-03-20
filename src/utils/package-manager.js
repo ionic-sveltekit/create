@@ -89,14 +89,14 @@ export async function removeDependencies(dependencies, logger, options = {}) {
 /**
  * Runs a script using the specified package manager
  */
-export async function runScript(script, logger, options = {}) {
+export async function runPackageManagerScript(script, logger, options = {}) {
   const {
     packageManager = 'npm',
     cwd = process.cwd(),
     verbose = false
   } = options;
 
-  const pm = PM_COMMANDS[packageManager] || PM_COMMANDS.npm;
+  const pm = PM_COMMANDS[packageManager] ?? PM_COMMANDS.npm;
   const args = pm.run ? [pm.run, script] : [script];
 
   return executePackageManager(packageManager, args, logger, { cwd, verbose });

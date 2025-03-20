@@ -3,10 +3,10 @@ import path from 'path';
 import ip from 'ip';
 import { Listr } from 'listr2';
 import { createDirectory, writeFile, readFile } from './utils/file-system.js';
-import { installDependencies, removeDependencies, runScript, detectPackageManager } from './utils/package-manager.js';
+import { installDependencies, removeDependencies, runPackageManagerScript, detectPackageManager } from './utils/package-manager.js';
 import { validateDirectory } from './utils/validation.js';
 import { createCleanupHandler } from './utils/error-handler.js';
-import { copyFromExamplePackage } from './utils/template-utils.js';
+import { copyFromExamplePackage, modifyTsconfig } from './utils/template-utils.js';
 
 /**
  * Creates a new Ionic SvelteKit project
@@ -60,25 +60,32 @@ export async function createProject(options, logger) {
             },
             {
               title: 'Copying template files',
-              task: () => {
+              task: async () => {
                 // copy static files
                 copyFromExamplePackage('static', projectPath, logger);
+
+                // copy example images
+                copyFromExamplePackage('src/lib/images', projectPath, logger);
 
                 // copy Ionic theme files
                 copyFromExamplePackage('src/theme', projectPath, logger);
 
                 // copy example components
-                copyFromExamplePackage('src/lib/components', projectPath, logger);
-
-                // copy example images
-                copyFromExamplePackage('src/lib/images', projectPath, logger);
+                copyFromExamplePackage('src/lib/components', projectPath, logger, {
+                  processTemplates: true,
+                  stripTypes: !useTypescript,
+                });
 
                 // copy example stores
-                copyFromExamplePackage('src/lib/stores', projectPath, logger);
+                copyFromExamplePackage('src/lib/stores', projectPath, logger, {
+                  processTemplates: true,
+                  stripTypes: !useTypescript,
+                });
 
                 // replace SvelteKit defaults with Ionic versions
                 copyFromExamplePackage('src/routes', projectPath, logger, {
                   processTemplates: true,
+                  stripTypes: !useTypescript,
                   variables: {
                     projectName: options.name,
                     useTypescript,
@@ -88,32 +95,14 @@ export async function createProject(options, logger) {
                 // Write svelte.config.js
                 copyFromExamplePackage('svelte.config.js', projectPath, logger);
 
-                // Disable SSR
-                writeFile(
-                  path.join(projectPath, 'src', 'routes', '+layout.ts'),
-                  'export const ssr = false;\n'
-                );
+                // Write initial empty .env file
+                copyFromExamplePackage('.env_example', projectPath, logger, {
+                  destPath: '.env',
+                });
 
                 // Update TypeScript configuration if needed
                 if (useTypescript) {
-                  try {
-                    const tsconfig = readFile(path.join(projectPath, 'tsconfig.json'), 'utf-8');
-                    const tsconfignew = tsconfig.replace(
-                      '"compilerOptions": {',
-                      `"compilerOptions": {
-    "verbatimModuleSyntax": true,
-    "typeRoots": [
-      "./node_modules/@ionic-sveltekit/core"
-    ],
-    "types": [
-      "@ionic-sveltekit/core"
-    ],`
-                    );
-
-                    writeFile(path.join(projectPath, 'tsconfig.json'), tsconfignew);
-                  } catch (error) {
-                    logger.warn('Unable to update tsconfig.json - ' + error.message);
-                  }
+                  // modifyTsconfig(projectPath, logger, options);
                 }
 
                 // Setup Capacitor if needed
@@ -167,8 +156,6 @@ export async function createProject(options, logger) {
       {
         title: 'Installing dependencies',
         task: async (ctx, task) => {
-          const pm = ctx.packageManager;
-
           return task.newListr([
             {
               title: 'Installing development dependencies',
@@ -181,7 +168,7 @@ export async function createProject(options, logger) {
 
                 await installDependencies(devDeps, logger, {
                   dev: true,
-                  packageManager: pm,
+                  packageManager: ctx.packageManager,
                   cwd: projectPath,
                   verbose: options.verbose
                 });
@@ -202,7 +189,7 @@ export async function createProject(options, logger) {
 
                 await installDependencies(deps, logger, {
                   dev: false,
-                  packageManager: pm,
+                  packageManager: ctx.packageManager,
                   cwd: projectPath,
                   verbose: options.verbose
                 });
@@ -212,7 +199,7 @@ export async function createProject(options, logger) {
               title: 'Removing unused dependencies',
               task: async () => {
                 await removeDependencies(['@sveltejs/adapter-auto'], logger, {
-                  packageManager: pm,
+                  packageManager: ctx.packageManager,
                   cwd: projectPath,
                   verbose: options.verbose
                 });
@@ -224,14 +211,19 @@ export async function createProject(options, logger) {
       {
         title: 'Finalizing project',
         task: async (ctx) => {
+          const opts = {
+            packageManager: ctx.packageManager,
+            cwd: projectPath,
+            verbose: options.verbose
+          };
+
+          // build the project
+          await runPackageManagerScript('build', logger, opts);
+
           // Run prettier if enabled
           if (options.prettier) {
             try {
-              await runScript('format', logger, {
-                packageManager: ctx.packageManager,
-                cwd: projectPath,
-                verbose: options.verbose
-              });
+              await runPackageManagerScript('format', logger, opts);
             } catch (error) {
               logger.warn('Failed to run Prettier - ' + error.message);
             }
