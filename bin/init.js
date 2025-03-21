@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs-extra';
+import path from 'path';
+import { execSync } from 'child_process';
 
 // Check if node_modules exists in the package directory
 const packageDir = path.resolve(__dirname, '..');
