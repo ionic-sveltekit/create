@@ -80,7 +80,7 @@ export default function createCLI() {
 
         // add a break after interactive options
         if (isInteractive) {
-          console.log('\n');
+          console.log(' ');
         }
 
         logger.debug("Final options:", projectOptions);
