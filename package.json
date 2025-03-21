@@ -46,7 +46,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@ionic-sveltekit/example": "^0.0.8",
+    "@ionic-sveltekit/example": "^0.0.10",
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
     "execa": "^8.0.1",
@@ -60,6 +60,7 @@
     "ora": "^7.0.1",
     "prompts": "^2.4.2",
     "semver": "^7.5.4",
+    "sv": "^0.6.26",
     "validate-npm-package-name": "^5.0.0"
   },
   "devDependencies": {
@@ -75,7 +76,6 @@
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
     "prettier": "^3.1.1",
-    "sv": "^0.6.26",
     "typescript": "^5.3.3"
   },
   "lint-staged": {
