@@ -211,22 +211,15 @@ export async function createProject(options, logger) {
       {
         title: 'Finalizing project',
         task: async (ctx) => {
-          const opts = {
-            packageManager: ctx.packageManager,
-            cwd: projectPath,
-            verbose: options.verbose
-          };
-
-          // build the project
-          await runPackageManagerScript('build', logger, opts);
-
-          // Run prettier if enabled
-          if (options.prettier) {
-            try {
-              await runPackageManagerScript('format', logger, opts);
-            } catch (error) {
-              logger.warn('Failed to run Prettier - ' + error.message);
-            }
+          try {
+            // build the project
+            await runPackageManagerScript('build', logger, {
+              packageManager: ctx.packageManager,
+              cwd: projectPath,
+              verbose: options.verbose
+            });
+          } catch (error) {
+            logger.warn('Failed to build project: ' + error.message);
           }
         }
       }

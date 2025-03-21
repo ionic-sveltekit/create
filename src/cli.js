@@ -78,6 +78,11 @@ export default function createCLI() {
           ? await getProjectOptions(options)
           : { ...DEFAULT_OPTIONS, ...options };
 
+        // add a break after interactive options
+        if (isInteractive) {
+          console.log('\n');
+        }
+
         logger.debug("Final options:", projectOptions);
 
         // Create the project
