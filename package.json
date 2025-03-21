@@ -46,7 +46,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@ionic-sveltekit/example": "^0.0.5",
+    "@ionic-sveltekit/example": "^0.0.8",
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
     "execa": "^8.0.1",
