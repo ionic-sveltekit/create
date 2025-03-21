@@ -1,4 +1,4 @@
-import { stripTypeScriptTypes } from 'module';
+import stripTypeScriptTypes from "ts-blank-space";
 
 export function removeTypescriptFromTsFile(content) {
   return stripTypeScriptTypes(content);
