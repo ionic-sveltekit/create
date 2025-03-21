@@ -210,18 +210,25 @@ export async function createProject(options, logger) {
       },
       {
         title: 'Finalizing project',
-        task: async (ctx) => {
-          try {
-            // build the project
-            await runPackageManagerScript('build', logger, {
-              packageManager: ctx.packageManager,
-              cwd: projectPath,
-              verbose: options.verbose
-            });
-          } catch (error) {
-            logger.warn('Failed to build project: ' + error.message);
-          }
-        }
+        task: async (ctx, task) => {
+          return task.newListr([
+            {
+              title: 'Running build script',
+              task: async () => {
+                try {
+                  // build the project
+                  await runPackageManagerScript('build', logger, {
+                    packageManager: ctx.packageManager,
+                    cwd: projectPath,
+                    verbose: options.verbose
+                  });
+                } catch (error) {
+                  logger.warn('Failed to build project: ' + error.message);
+                }
+              }
+            },
+          ]);
+        },
       }
     ], {
       rendererOptions: {
