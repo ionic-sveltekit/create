@@ -1,6 +1,6 @@
 {
   "name": "@ionic-sveltekit/create",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "CLI tool to create a new SvelteKit project with Ionic UI components",
   "bugs": {
     "url": "https://github.com/ionic-sveltekit/create/issues"
