@@ -20,7 +20,7 @@ const { version } = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 /**
  * Creates and configures the CLI
  */
-function createCLI() {
+export default function createCLI() {
   const program = new Command();
   const logger = new Logger();
 
@@ -94,13 +94,4 @@ function createCLI() {
   program.parse();
 
   return program;
-}
-
-// Run the CLI
-try {
-  createCLI();
-} catch (error) {
-  handleError(error);
-
-  process.exit(1);
 }
