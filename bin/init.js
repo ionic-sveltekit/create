@@ -24,4 +24,4 @@ if (!fs.existsSync(nodeModulesPath) || fs.readdirSync(nodeModulesPath).length ==
 }
 
 // Import your actual CLI implementation
-require('../src/cli.js');
+import('../src/cli.js');
