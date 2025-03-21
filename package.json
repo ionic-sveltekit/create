@@ -40,7 +40,7 @@
     "build": "tsc",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,json}\"",
-    "github:npm_publish": "npm run build && npm run format && npm publish --provenance --access public"
+    "github:npm_publish": "npm run format && npm publish --provenance --access public"
   },
   "engines": {
     "node": ">=18.0.0"
