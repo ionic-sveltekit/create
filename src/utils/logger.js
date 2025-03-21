@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import logSymbols from 'log-symbols';
 import ora from 'ora';
-import { RESOURCES } from './constants.js';
+import { RESOURCES } from '../constants.js';
 
 /**
  * Logger class for handling all CLI output

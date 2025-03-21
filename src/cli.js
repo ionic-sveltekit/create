@@ -6,9 +6,10 @@ import chalk from 'chalk';
 import { DEFAULT_OPTIONS, OPTION_DESCRIPTIONS } from './constants.js';
 import { getProjectOptions } from './prompt.js';
 import { createProject } from './project.js';
-import { Logger } from './logger.js';
+import { Logger } from './utils/logger.js';
 import { validateProjectName } from './utils/validation.js';
 import { detectPackageManager } from './utils/package-manager.js';
+import { handleError } from './utils/error-handler.js';
 
 // Get package version
 const __filename = fileURLToPath(import.meta.url);
@@ -19,7 +20,7 @@ const { version } = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 /**
  * Creates and configures the CLI
  */
-export function createCLI() {
+function createCLI() {
   const program = new Command();
   const logger = new Logger();
 
@@ -93,4 +94,13 @@ export function createCLI() {
   program.parse();
 
   return program;
+}
+
+// Run the CLI
+try {
+  createCLI();
+} catch (error) {
+  handleError(error);
+
+  process.exit(1);
 }

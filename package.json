@@ -29,7 +29,7 @@
   "type": "module",
   "main": "./src/index.js",
   "bin": {
-    "create": "bin/create.js"
+    "create": "bin/init.js"
   },
   "files": [
     "bin/",
@@ -37,6 +37,7 @@
     "README.md"
   ],
   "scripts": {
+    "postinstall": "npm install",
     "build": "tsc",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,json}\"",
